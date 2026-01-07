@@ -1,0 +1,42 @@
+import pandas as pd
+import numpy as np
+import psycopg2
+
+df = pd.read_csv("data/sales.csv")
+
+df['order_date'] = pd.to_datetime(df['order_date'])
+df['quantity'] = pd.to_numeric(df['quantity'])
+df['price'] = pd.to_numeric(df['price'])
+
+df['revenue'] = df['quantity'] * df['price']
+
+conn = psycopg2.connect(
+    host="localhost",
+    database="sales_db",
+    user="postgres",
+    password="password"
+)
+cursor = conn.cursor()
+
+query = """
+INSERT INTO sales
+(order_id, order_date, product, category, quantity, price, city)
+VALUES (%s,%s,%s,%s,%s,%s,%s)
+"""
+
+for _, r in df.iterrows():
+    cursor.execute(query, (
+        int(r['order_id']),
+        r['order_date'],
+        r['product'],
+        r['category'],
+        int(r['quantity']),
+        int(r['price']),
+        r['city']
+    ))
+
+conn.commit()
+cursor.close()
+conn.close()
+
+print("Sales ETL completed")

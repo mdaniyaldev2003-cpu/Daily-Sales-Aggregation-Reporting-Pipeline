@@ -1,0 +1,15 @@
+CREATE TABLE sales (
+    order_id INT PRIMARY KEY,
+    order_date DATE,
+    product VARCHAR(50),
+    category VARCHAR(50),
+    quantity INT,
+    price INT,
+    city VARCHAR(50)
+);
+
+CREATE TABLE daily_sales_summary (
+    sale_date DATE,
+    total_orders INT,
+    total_revenue INT
+);
