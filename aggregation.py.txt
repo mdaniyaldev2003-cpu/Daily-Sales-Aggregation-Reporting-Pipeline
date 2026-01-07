@@ -1,0 +1,39 @@
+import pandas as pd
+import psycopg2
+
+conn = psycopg2.connect(
+    host="localhost",
+    database="sales_db",
+    user="postgres",
+    password="password"
+)
+
+query = """
+SELECT order_date,
+       COUNT(order_id) AS total_orders,
+       SUM(quantity * price) AS total_revenue
+FROM sales
+GROUP BY order_date
+"""
+
+df = pd.read_sql(query, conn)
+
+cursor = conn.cursor()
+insert = """
+INSERT INTO daily_sales_summary
+(sale_date, total_orders, total_revenue)
+VALUES (%s,%s,%s)
+"""
+
+for _, r in df.iterrows():
+    cursor.execute(insert, (
+        r['order_date'],
+        int(r['total_orders']),
+        int(r['total_revenue'])
+    ))
+
+conn.commit()
+cursor.close()
+conn.close()
+
+print("Daily aggregation completed")
